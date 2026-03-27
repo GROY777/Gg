@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LITHIUM | Садыков Маир</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;800&family=Outfit:wght@300;600;900&display=swap');
+
+        :root {
+            --bg: #030303;
+            --surface: #0f0f0f;
+            --accent: #00ff88;
+            --text: #ffffff;
+            --text-dim: #555555;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; font-family: 'Outfit', sans-serif; 
+            background: var(--bg); color: var(--text);
+            height: 100vh; overflow: hidden;
+        }
+
+        /* --- FACE ID АНИМАЦИЯ --- */
+        #auth-gate {
+            position: fixed; inset: 0; background: var(--bg);
+            z-index: 10000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: 1s ease-in-out;
+        }
+        .scanner {
+            width: 140px; height: 140px; border: 1px solid var(--accent);
+            border-radius: 45px; position: relative; overflow: hidden;
+        }
+        .laser {
+            position: absolute; width: 100%; height: 50%;
+            background: linear-gradient(to bottom, transparent, var(--accent));
+            opacity: 0.5; top: -50%; animation: scan 2.5s infinite;
+        }
+
+        /* --- ГЛАВНЫЙ ЭКРАН --- */
+        #main-view { 
+            height: 100vh; overflow-y: auto; padding: 25px; 
+            display: none; opacity: 0; transition: 1s;
+        }
+
+        /* КАРТА С ПЕРСОНАЛИЗАЦИЕЙ */
+        .premium-card {
+            background: linear-gradient(145deg, #151515, #000000);
+            border: 1px solid var(--border);
+            padding: 30px; border-radius: 35px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(0,255,136,0.05);
+            margin-bottom: 35px; position: relative;
+        }
+        .chip { width: 45px; height: 35px; background: linear-gradient(90deg, #333, #111); border-radius: 8px; margin-bottom: 20px; }
+        .card-name { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px; color: var(--text-dim); }
+        .full-name { font-size: 1.1rem; font-weight: 600; margin-top: 5px; letter-spacing: 1px; }
+        .balance-main { font-family: 'JetBrains Mono'; font-size: 2.4rem; font-weight: 800; margin: 20px 0; }
+
+        /* ИСТОРИЯ ОПЕРАЦИЙ */
+        .history-section { margin-top: 40px; }
+        .tx-row {
+            background: var(--glass); margin-bottom: 12px; padding: 18px;
+            border-radius: 22px; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid transparent; transition: 0.3s;
+        }
+        .tx-row:active { border-color: var(--accent); background: var(--accent-soft); }
+        .tx-icon { width: 45px; height: 45px; background: #1a1a1a; border-radius: 15px; display: grid; place-items: center; font-size: 1.2rem; }
+        .amount.pos { color: var(--accent); }
+        .amount.neg { color: #ff4757; }
+
+        /* МЕНЮ */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 90px; background: rgba(5,5,5,0.8); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid var(--border);
+        }
+        .nav-btn { font-size: 1.5rem; opacity: 0.4; }
+        .nav-btn.active { opacity: 1; color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+
+        @keyframes scan { 0% { top: -50% } 50% { top: 100% } 100% { top: -50% } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-gate">
+        <div class="scanner"><div class="laser"></div></div>
+        <p style="margin-top: 30px; letter-spacing: 3px; font-weight: 300; color: var(--accent);">IDENTITY VERIFIED</p>
+    </div>
+
+    <div id="main-view">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div style="font-weight: 900; font-size: 1.5rem;">LITHIUM<span style="color:var(--accent)">+</span></div>
+            <div style="width: 40px; height: 40px; background: var(--glass); border-radius: 12px; display: grid; place-items: center;">🔔</div>
+        </header>
+
+        <div class="premium-card">
+            <div class="chip"></div>
+            <div class="card-name">Card Holder</div>
+            <div class="full-name">САДЫКОВ МАИР ИЛЬГАРОВИЧ</div>
+            <div class="balance-main" id="balanceDisplay">321,300.00 ₽</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono'; color: var(--text-dim);">
+                <span>•••• 8812</span>
+                <span>05/29</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+            <div style="text-align: center;" onclick="doTransfer()">
+                <div style="background: var(--accent); color: black; width: 60px; height: 60px; border-radius: 20px; margin: 0 auto 10px; display: grid; place-items: center; font-size: 1.4rem;">💸</div>
+                <span style="font-size: 0.7rem; font-weight: 600;">ПЕРЕВОД</span>
+            </div>
+            <div style="text-align: center;">
+                <div style="background: var(--surface); width: 60px; height: 60px; border-radius: 20px; margin: 0 auto 10px; display: grid; place-items: center; font-size: 1.4rem; border: 1px solid var(--border);">📊</div>
+                <span style="font-size: 0.7rem; font-weight: 600;">АНАЛИЗ</span>
+            </div>
+            <div style="text-align: center;">
+                <div style="background: var(--surface); width: 60px; height: 60px; border-radius: 20px; margin: 0 auto 10px; display: grid; place-items: center; font-size: 1.4rem; border: 1px solid var(--border);">🏦</div>
+                <span style="font-size: 0.7rem; font-weight: 600;">КРЕДИТ</span>
+            </div>
+            <div style="text-align: center;">
+                <div style="background: var(--surface); width: 60px; height: 60px; border-radius: 20px; margin: 0 auto 10px; display: grid; place-items: center; font-size: 1.4rem; border: 1px solid var(--border);">⚙️</div>
+                <span style="font-size: 0.7rem; font-weight: 600;">НАСТР.</span>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h3 style="font-size: 0.9rem; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 20px; text-transform: uppercase;">Недавние транзакции</h3>
+            
+            <div class="tx-row">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="tx-icon">🎮</div>
+                    <div>
+                        <div style="font-weight: 600;">Steam Services</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">Развлечения</div>
+                    </div>
+                </div>
+                <div class="amount neg">- 2,400 ₽</div>
+            </div>
+
+            <div class="tx-row">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="tx-icon">👤</div>
+                    <div>
+                        <div style="font-weight: 600;">Ислам К.</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">Перевод по номеру</div>
+                    </div>
+                </div>
+                <div class="amount neg">- 200,000 ₽</div>
+            </div>
+
+            <div class="tx-row">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="tx-icon">💎</div>
+                    <div>
+                        <div style="font-weight: 600;">Сада С.</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">Перевод</div>
+                    </div>
+                </div>
+                <div class="amount neg">- 5,000 ₽</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-btn active">●</div>
+        <div class="nav-btn">🧭</div>
+        <div class="nav-btn">💳</div>
+        <div class="nav-btn">👤</div>
+    </nav>
+
+    <script>
+        let balance = 321300;
+
+        // Эффект входа
+        setTimeout(() => {
+            const gate = document.getElementById('auth-gate');
+            const app = document.getElementById('main-view');
+            gate.style.opacity = '0';
+            setTimeout(() => {
+                gate.style.display = 'none';
+                app.style.display = 'block';
+                setTimeout(() => app.style.opacity = '1', 50);
+            }, 1000);
+        }, 3000);
+
+        function doTransfer() {
+            const sum = prompt("Введите сумму для перевода:");
+            if(sum && !isNaN(sum) && sum <= balance) {
+                balance -= sum;
+                document.getElementById('balanceDisplay').innerText = balance.toLocaleString() + ".00 ₽";
+                alert("Транзакция LITHIUM подтверждена!");
+            } else {
+                alert("Ошибка: Некорректные данные или лимит исчерпан.");
+            }
+        }
+    </script>
+</body>
+</html>
